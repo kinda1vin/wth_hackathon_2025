@@ -5,7 +5,9 @@
   - Sends ONLY when any of [X, Y, SW] changes
   - Frame: AA BB | X_hi X_lo | Y_hi Y_lo | SW | CC DD
 */
-
+const int VRx = 36;   // ADC pin for X-axis
+const int VRy = 39;  // ADC pin for Y-axis
+const int SW  = 34;   // Joystick button
 #include <WiFi.h>
 
 //////////////////// USER SETTINGS ////////////////////
@@ -125,6 +127,8 @@ void setup() {
   delay(200);
   Serial.println("\n=== ESP32-S3 TCP Client (Joystick via shared array) ===");
 
+  pinMode(SW, INPUT_PULLUP);
+
   ensureWiFi();
   connectToServer();
 }
@@ -145,7 +149,7 @@ void loop() {
   // Poll the shared array and send only on change
   if (client.connected() && (millis() - lastPollMs >= POLL_INTERVAL_MS)) {
     lastPollMs = millis();
-    maybeSendFromShared();
+    sendJoystick9(analogRead(VRx), analogRead(VRy), digitalRead(SW));
   }
 
   if (!client.connected()) delay(50);
